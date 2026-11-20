@@ -20,6 +20,7 @@ import android.widget.FrameLayout
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import `in`.breeze.blaze.customtab.CustomTab
 import org.json.JSONArray
 import org.json.JSONObject
 import java.lang.ref.WeakReference
@@ -139,6 +140,7 @@ internal class BlazeWebView @SuppressLint(
   fun terminate() {
     isTerminated = true
     frameLoadTarget.set(null)
+    CustomTab.reset()
     this.sendEvent("terminate", JSONObject())
     hideView()
     contextRef.get()?.runOnUiThread {
@@ -315,6 +317,11 @@ internal class BlazeWebView @SuppressLint(
     } else if (methodName == "findApps") {
       val payload = paramsJson.optString("payload")
       invokeResult.put("methodResult", findApps(payload))
+    } else if (methodName == "launchCustomTab") {
+      CustomTab.launch(contextRef.get(), paramsJson.optString("url")) { result ->
+        sendEvent("invokeMethodResult", JSONObject(invokeResult.toString()).put("methodResult", result))
+      }
+      return
     } else {
       invokeResult.put("methodResult", "Method not found")
     }
